@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
-import InputOptions from "./components/InputOptions";
+
 import { MerkleTree } from "./utils/merkle";
 import { words } from "./utils/words";
+
+import InputOptions from "./components/InputOptions";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 export function Grid(props) {
   const { size, tree } = props;
@@ -69,7 +73,10 @@ export function Grid(props) {
       style={{
         display: "grid",
         gridTemplateRows: `repeat(${actualCount}, 1fr)`,
-        gridTemplateColumns: `repeat(${power}, 1fr)`,
+        gridTemplateColumns: `repeat(${power}, var(--node-width))`,
+        columnGap: "32px",
+        rowGap: "16px",
+        margin: "16px 0px",
       }}
     >
       {textInput.map((e, i) => {
@@ -92,6 +99,7 @@ export function Grid(props) {
         return (
           <div
             key={node.id}
+            className={`node ${j % 2 ? "bottom" : "top"}`}
             style={{
               gridColumnStart: x,
               gridColumnEnd: x,
@@ -100,7 +108,11 @@ export function Grid(props) {
               color: nodestoHighlight.includes(node.id) ? "red" : "black",
             }}
           >
-            {node.hash.substring(0, 7)}...
+            id: {node.id.substring(0, 5)}...
+            <br />
+            hash: {node.hash.substring(0, 5)}...
+            <br />
+            value: {node.value.substring(0, 5)}...
           </div>
         );
       })}
@@ -115,17 +127,21 @@ function App() {
 
   return (
     <div>
-      <InputOptions
-        size={selectedSize}
-        setSelectedSize={(size) => {
-          const input = words
-            .sort(() => 0.5 - Math.random())
-            .slice(0, 2 ** size);
-          setTree(new MerkleTree(input));
-          setSelectedSize(size);
-        }}
-      />
-      <Grid size={selectedSize} tree={tree} />
+      <Header />
+      <main>
+        <InputOptions
+          size={selectedSize}
+          setSelectedSize={(size) => {
+            const input = words
+              .sort(() => 0.5 - Math.random())
+              .slice(0, 2 ** size);
+            setTree(new MerkleTree(input));
+            setSelectedSize(size);
+          }}
+        />
+        <Grid size={selectedSize} tree={tree} />
+      </main>
+      <Footer />
     </div>
   );
 }
