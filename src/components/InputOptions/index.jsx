@@ -17,10 +17,7 @@ export default function InputOptions(props) {
           }}
           style={{
             border: `1px solid ${vi === size ? "#5F71F3" : "#C5C5C5"}`,
-            // borderTopRightRadius: index === 0 ? "0px" : "4px",
-            // borderBottomRightRadius: index === 0 ? "0px" : "4px",
-            // borderTopLeftRadius: index === 0 ? "0px" : "4px",
-            // borderBottomLeftRadius: index === 0 ? "0px" : "4px",
+            marginRight: "8px",
             color: vi === size ? "#5F71F3" : "#C5C5C5",
           }}
         >

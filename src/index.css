@@ -2,9 +2,15 @@
 
 :root {
   --primary: #5f71f3;
-  --node-width: 100px;
+  --error: #f35f7e;
+  --node-width: 80px;
   --column-gap: 32px;
   --row-grap: 16px;
+}
+* {
+  box-sizing: border-box;
+  padding: 0px;
+  margin: 0px;
 }
 body {
   margin: 0;
@@ -49,36 +55,49 @@ button {
   cursor: pointer;
 }
 
-textarea {
+input {
   background-color: #fff;
   border-radius: 4px;
   font-family: "Poppins", sans-serif;
   border: 1px solid var(--primary);
   resize: none;
-  height: 100%;
+  /* height: 100%; */
   padding: 4px;
   font-size: 14px;
   width: var(--node-width);
 }
 
 .node {
-  background-color: #fff;
+  background-color: var(--primary);
   border-radius: 4px;
-  font-family: "Poppins", sans-serif;
   border: 1px solid var(--primary);
   position: relative;
   width: var(--node-width);
   padding: 4px;
+  font-family: "Poppins", sans-serif;
   font-size: 14px;
+  color: #fff;
 }
 
+.node-text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  user-select: none;
+}
+.node-meta {
+  color: var(--primary);
+  background-color: white;
+  text-align: center;
+  font-size: 11px;
+}
 .top::after {
   content: "";
   position: absolute;
   width: calc((var(--node-width) / 2) + var(--column-gap));
   height: calc(var(--node-width) / 2);
-  border-top: 1px dotted red;
-  border-right: 1px dotted red;
+  border-top: 1px dotted var(--error);
+  border-right: 1px dotted var(--error);
   bottom: var(--row-gap);
   z-index: -1;
 }
@@ -88,8 +107,8 @@ textarea {
   position: absolute;
   width: calc((var(--node-width) / 2) + var(--column-gap));
   height: calc(var(--node-width) / 2);
-  border-bottom: 1px dotted red;
-  border-right: 1px dotted red;
+  border-bottom: 1px dotted var(--error);
+  border-right: 1px dotted var(--error);
   top: -16px;
   z-index: -1;
 }

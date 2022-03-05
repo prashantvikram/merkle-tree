@@ -95,6 +95,7 @@ export class MerkleTree {
       currentDepth = parent.depth;
       affectedNodes.push(parent.id);
     }
+    if (affectedNodes.length) affectedNodes.unshift(id);
     const wasTreeModified = modifiedHash !== this.root.hash;
     return { affectedNodes, wasTreeModified };
   }

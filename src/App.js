@@ -6,6 +6,8 @@ import { words } from "./utils/words";
 import InputOptions from "./components/InputOptions";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import Tooltip from "./components/Tooltip";
+import Node from "./components/Node";
 
 export function Grid(props) {
   const { size, tree } = props;
@@ -20,20 +22,29 @@ export function Grid(props) {
       const { id, depth, leftChildId, rightChildId } = node;
       const x = depth + 2; // column
       let y;
+      let displayLabel = "";
       const nodeIndex = nodes.findIndex((n) => n.id === id);
       if (nodeIndex > -1) {
         if (depth === 0) {
           y = 2 * index + 1; // row
+          displayLabel = `H${index}-${depth} = H(L${index})`;
         } else {
           const lcIndex = nodes.findIndex((n) => n.id === leftChildId);
           const rcIndex = nodes.findIndex((n) => n.id === rightChildId);
           if (lcIndex > -1 && rcIndex > -1) {
             y = (nodes[lcIndex].y + nodes[rcIndex].y) / 2;
+
+            const leftLabel = nodes[lcIndex].displayLabel.split("=")[0].trim();
+            const rightLabel = nodes[rcIndex].displayLabel.split("=")[0].trim();
+            displayLabel = `H${
+              index - power
+            }-${depth} = H(${leftLabel} + ${rightLabel})`;
           }
         }
         nodes[nodeIndex] = {
           x,
           y,
+          displayLabel,
           ...node,
         };
       }
@@ -42,6 +53,7 @@ export function Grid(props) {
     nodes.filter((node) => node.depth === 0)
   );
   const [nodestoHighlight, setNodestoHighlight] = useState([]);
+  const [selectedNode, setSelectedNode] = useState(null);
 
   const onChange = (ev, node) => {
     const clonedTextInput = [...textInput];
@@ -72,9 +84,9 @@ export function Grid(props) {
     <div
       style={{
         display: "grid",
-        gridTemplateRows: `repeat(${actualCount}, 1fr)`,
-        gridTemplateColumns: `repeat(${power}, var(--node-width))`,
-        columnGap: "32px",
+        gridTemplateRows: `repeat(${power}, calc(var(--node-width) / 1.5))`,
+        gridTemplateColumns: `repeat(${actualCount}, var(--node-width))`,
+        columnGap: "16px",
         rowGap: "16px",
         margin: "16px 0px",
       }}
@@ -84,38 +96,105 @@ export function Grid(props) {
           <div
             key={e.id}
             style={{
-              gridColumnStart: 1,
-              gridColumnEnd: 1,
-              gridRowStart: e.y,
-              gridRowEnd: e.y,
+              gridColumnStart: e.y,
+              gridColumnEnd: e.y,
+              gridRowStart: 1,
+              gridRowEnd: 1,
             }}
           >
-            <textarea value={e.value} onChange={(ev) => onChange(ev, e)} />
+            <input value={e.value} onChange={(ev) => onChange(ev, e)} />
+            <div className="node-meta">L{i}</div>
           </div>
         );
       })}
       {nodes.map((node, j) => {
-        const { x, y } = node;
         return (
-          <div
+          <Node
             key={node.id}
-            className={`node ${j % 2 ? "bottom" : "top"}`}
-            style={{
-              gridColumnStart: x,
-              gridColumnEnd: x,
-              gridRowStart: y,
-              gridRowEnd: y,
-              color: nodestoHighlight.includes(node.id) ? "red" : "black",
-            }}
-          >
-            id: {node.id.substring(0, 5)}...
-            <br />
-            hash: {node.hash.substring(0, 5)}...
-            <br />
-            value: {node.value.substring(0, 5)}...
-          </div>
+            index={j}
+            node={node}
+            nodestoHighlight={nodestoHighlight}
+            setSelectedNode={setSelectedNode}
+          />
         );
       })}
+
+      {nodes.map((node) => {
+        const { leftChildId, rightChildId } = node;
+        const current = document.getElementById(node.id);
+        const left = document.getElementById(leftChildId);
+        const right = document.getElementById(rightChildId);
+        if (left && right) {
+          const currentRect = current.getBoundingClientRect();
+          const leftRect = left.getBoundingClientRect();
+          const rightRect = right.getBoundingClientRect();
+          const startLX = leftRect.x + leftRect.width / 2;
+          const startLY = leftRect.y + leftRect.height;
+          const endLX = currentRect.x;
+          const endLY = currentRect.y + currentRect.height / 2;
+
+          const width = endLX - startLX;
+          const height = endLY - startLY;
+
+          const startRX = currentRect.x + currentRect.width;
+          const startRY = rightRect.y + rightRect.height;
+
+          return (
+            <>
+              <svg
+                width={width}
+                height={height}
+                style={{
+                  position: "absolute",
+                  left: startLX,
+                  top: startLY,
+                }}
+              >
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={width}
+                  y2={height}
+                  stroke={
+                    nodestoHighlight.includes(leftChildId)
+                      ? "var(--error)"
+                      : "var(--primary)"
+                  }
+                  stroke-dasharray={
+                    nodestoHighlight.includes(leftChildId) ? "2" : "0"
+                  }
+                />
+              </svg>
+              <svg
+                width={width}
+                height={width}
+                style={{
+                  position: "absolute",
+                  left: startRX,
+                  top: startRY,
+                }}
+              >
+                <line
+                  x1={0}
+                  y1={height}
+                  x2={width}
+                  y2={0}
+                  stroke={
+                    nodestoHighlight.includes(rightChildId)
+                      ? "var(--error)"
+                      : "var(--primary)"
+                  }
+                  stroke-dasharray={
+                    nodestoHighlight.includes(rightChildId) ? "2" : "0"
+                  }
+                />
+              </svg>
+            </>
+          );
+        }
+        return null;
+      })}
+      {selectedNode && <Tooltip node={selectedNode} />}
     </div>
   );
 }
